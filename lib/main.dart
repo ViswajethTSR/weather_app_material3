@@ -6,29 +6,41 @@ void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  Color seedColor = Color(0xfd09bfe8);
+  void changeColor(Color color) {
+    setState(() {
+      seedColor = color;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    Brightness brightness = MediaQuery.of(context).platformBrightness;
+    bool isLightMode = brightness.name == "light";
     return MaterialApp(
       theme: ThemeData(
-          // appBarTheme: const AppBarTheme(
-          //   backgroundColor: Color(0xfff3da63),
-          //   centerTitle: true,
-          // ),|~
-          colorScheme: ColorScheme.fromSeed(
-        seedColor: Color(0xff5496b9),
-        brightness: Brightness.light,
-        // secondary: Color(0xff87a9c7),
-      )),
-      home: Splash(),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: seedColor,
+          brightness: isLightMode ? Brightness.light : Brightness.dark,
+        ),
+      ),
+      home: Splash(onColorChanged: changeColor),
     );
   }
 }
 
 class Splash extends StatelessWidget {
-  const Splash({Key? key}) : super(key: key);
+  final Function(Color) onColorChanged;
+
+  const Splash({required this.onColorChanged, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +58,7 @@ class Splash extends StatelessWidget {
                 splashScreenBody: Center(
                   child: Image.asset("lib/assets/images/weather_app_logo.png"),
                 ),
-                nextScreen: const WeatherApp(),
+                nextScreen: WeatherApp(onColorChanged: onColorChanged),
                 backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
                 duration: const Duration(milliseconds: 3000),
                 onInit: () async {

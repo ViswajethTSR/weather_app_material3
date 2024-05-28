@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:geolocator/geolocator.dart' as GeoLocator;
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -13,7 +14,8 @@ import 'package:intl/intl.dart';
 import '../my_constants.dart';
 
 class WeatherApp extends StatefulWidget {
-  const WeatherApp({super.key});
+  final Function(Color) onColorChanged;
+  const WeatherApp({required this.onColorChanged, super.key});
 
   @override
   State<WeatherApp> createState() => _WeatherAppState();
@@ -40,119 +42,30 @@ class _WeatherAppState extends State<WeatherApp> {
     _onInit();
   }
 
-  Future<void> _onInit() async {
-    await _locationPermissionCheck();
-    await _getCurrentLocationAndCityName();
-    await _fetchWeatherData();
-  }
-
-  Future<void> _fetchWeatherData() async {
-    setState(() {
-      _isLoading = true;
-      _timeVsTempList.clear();
-      _windSpeedList.clear();
-    });
-
-    try {
-      final response = await MyConst.dio.get(
-        'https://weatherapi-com.p.rapidapi.com/forecast.json?q=${_cityName}&days=3',
-        options: Options(
-          headers: {
-            'X-RapidAPI-Key': '1fe6d01ae5msh2559675af7836d9p12091bjsne9818efda569',
-            'X-RapidAPI-Host': 'weatherapi-com.p.rapidapi.com'
-          },
-        ),
-      );
-      if (response.statusCode == 200) {
-        weatherResponse = Weather.fromJson(response.data);
-
-        final List<dynamic> list = weatherResponse!.forecast!.forecastday!;
-
-        for (Forecastday forecastday in list) {
-          for (Hour hour in forecastday.hour!) {
-            final temperature = hour.tempC?.toStringAsFixed(1);
-            final dateTime = DateTime.parse(hour.time ?? "");
-            _timeVsTempList.add(WeatherData(DateFormat("MMM d / HH:mm").format(dateTime), double.parse(temperature!)));
-          }
-        }
-        for (Forecastday forecastday in list) {
-          for (Hour hour in forecastday.hour!) {
-            final windSpeed = hour.windKph?.toStringAsFixed(1);
-            final dateTime = DateTime.parse(hour.time ?? "");
-            _windSpeedList.add(WeatherData(DateFormat("MMM d / HH:mm").format(dateTime), double.parse(windSpeed!)));
-          }
-        }
-
-        setState(() {
-          _temperature = weatherResponse!.current!.tempC.toString();
-          _iconUrl = "https:" + weatherResponse!.current!.condition!.icon!;
-          _windSpeed = weatherResponse!.current!.windKph!.toDouble();
-          _humidity = weatherResponse!.current!.humidity!.toInt();
-          _isLoading = false;
-        });
-        await _scrolltoCurrentTime();
-      }
-    } catch (e) {
-      ToastManager.showToast(msg: "Weather Data is not available for your location");
-      print(e);
-    }
-  }
-
-  Future<void> _getCurrentLocationAndCityName() async {
-    try {
-      _isLoading = true;
-      GeoLocator.Position position = await GeoLocator.Geolocator.getCurrentPosition(desiredAccuracy: GeoLocator.LocationAccuracy.high);
-
-      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
-      Placemark place = placemarks[0];
-      _cityName = place.locality ?? "";
-      ToastManager.showToast(msg: _cityName);
-
-      _isLoading = false;
-    } catch (e) {
-      ToastManager.showToast(msg: e.toString());
-      print('Error getting current location: $e');
-    }
-  }
-
-  Future<void> _locationPermissionCheck() async {
-    _isLoading = true;
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
-      }
-    }
-  }
-
-  Future<void> _scrolltoCurrentTime() async {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollController.animateTo(now.hour * 158.5, duration: const Duration(milliseconds: 800), curve: Curves.bounceInOut);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Weather Forecast"),
+        title: Text("Weather Forecast", style: TextStyle(color: Theme.of(context).colorScheme.primary)),
         backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
         actions: [
           IconButton(
-              onPressed: () {
-                _getCurrentLocationAndCityName();
-                _fetchWeatherData();
-              },
-              icon: Icon(
-                Icons.location_pin,
-                color: Theme.of(context).appBarTheme.actionsIconTheme?.color,
-              ))
+            onPressed: _showColorPicker,
+            icon: Icon(
+              Icons.color_lens,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              _getCurrentLocationAndCityName();
+              _fetchWeatherData();
+            },
+            icon: Icon(
+              Icons.location_pin,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
         ],
       ),
       backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
@@ -226,7 +139,7 @@ class _WeatherAppState extends State<WeatherApp> {
     );
   }
 
-  Padding _getNewSearchBar() {
+  Widget _getNewSearchBar() {
     return Padding(
       padding: const EdgeInsets.only(right: 15.0, left: 15, bottom: 5, top: 20),
       child: SearchBar(
@@ -290,19 +203,17 @@ class _WeatherAppState extends State<WeatherApp> {
       margin: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        // gradient: LinearGradient(
-        //   begin: Alignment.topCenter,
-        //   end: Alignment.bottomCenter,
-        //   colors: [Theme.of(context).colorScheme.primaryContainer, Theme.of(context).colorScheme.secondaryContainer],
-        // ),
-        color: Theme.of(context).colorScheme.primaryContainer,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Theme.of(context).colorScheme.primaryContainer,
+            Theme.of(context).colorScheme.secondaryContainer,
+          ],
+        ),
+        // color: Theme.of(context).colorScheme.secondaryContainer,
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 3,
-            offset: const Offset(0, 3),
-          ),
+          BoxShadow(color: Theme.of(context).colorScheme.shadow, blurRadius: 2),
         ],
       ),
       child: Row(
@@ -479,11 +390,137 @@ class _WeatherAppState extends State<WeatherApp> {
     );
   }
 
+  Future<void> _onInit() async {
+    await _locationPermissionCheck();
+    await _getCurrentLocationAndCityName();
+    await _fetchWeatherData();
+  }
+
+  Future<void> _fetchWeatherData() async {
+    setState(() {
+      _isLoading = true;
+      _timeVsTempList.clear();
+      _windSpeedList.clear();
+    });
+
+    try {
+      final response = await MyConst.dio.get(
+        'https://weatherapi-com.p.rapidapi.com/forecast.json?q=${_cityName}&days=3',
+        options: Options(
+          headers: {
+            'X-RapidAPI-Key': '1fe6d01ae5msh2559675af7836d9p12091bjsne9818efda569',
+            'X-RapidAPI-Host': 'weatherapi-com.p.rapidapi.com'
+          },
+        ),
+      );
+      if (response.statusCode == 200) {
+        weatherResponse = Weather.fromJson(response.data);
+
+        final List<dynamic> list = weatherResponse!.forecast!.forecastday!;
+
+        for (Forecastday forecastday in list) {
+          for (Hour hour in forecastday.hour!) {
+            final temperature = hour.tempC?.toStringAsFixed(1);
+            final dateTime = DateTime.parse(hour.time ?? "");
+            _timeVsTempList.add(WeatherData(DateFormat("MMM d / HH:mm").format(dateTime), double.parse(temperature!)));
+          }
+        }
+        for (Forecastday forecastday in list) {
+          for (Hour hour in forecastday.hour!) {
+            final windSpeed = hour.windKph?.toStringAsFixed(1);
+            final dateTime = DateTime.parse(hour.time ?? "");
+            _windSpeedList.add(WeatherData(DateFormat("MMM d / HH:mm").format(dateTime), double.parse(windSpeed!)));
+          }
+        }
+
+        setState(() {
+          _temperature = weatherResponse!.current!.tempC.toString();
+          _iconUrl = "https:" + weatherResponse!.current!.condition!.icon!;
+          _windSpeed = weatherResponse!.current!.windKph!.toDouble();
+          _humidity = weatherResponse!.current!.humidity!.toInt();
+          _isLoading = false;
+        });
+        await _scrolltoCurrentTime();
+      }
+    } catch (e) {
+      ToastManager.showToast(msg: "Weather Data is not available for your location");
+      print(e);
+    }
+  }
+
+  Future<void> _getCurrentLocationAndCityName() async {
+    try {
+      _isLoading = true;
+      GeoLocator.Position position = await GeoLocator.Geolocator.getCurrentPosition(desiredAccuracy: GeoLocator.LocationAccuracy.high);
+
+      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      Placemark place = placemarks[0];
+      _cityName = place.locality ?? "";
+      ToastManager.showToast(msg: _cityName);
+
+      _isLoading = false;
+    } catch (e) {
+      ToastManager.showToast(msg: e.toString());
+      print('Error getting current location: $e');
+    }
+  }
+
+  Future<void> _locationPermissionCheck() async {
+    _isLoading = true;
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+  }
+
+  Future<void> _scrolltoCurrentTime() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(now.hour * 158.5, duration: const Duration(milliseconds: 800), curve: Curves.bounceInOut);
+    });
+  }
+
   Widget _getIconFromEndpoint(String iconUrl) {
     return Image.network(
       iconUrl,
       errorBuilder: (context, error, stackTrace) {
         return const CircularProgressIndicator();
+      },
+    );
+  }
+
+  void _showColorPicker() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        Color pickerColor = Theme.of(context).colorScheme.primary;
+        return AlertDialog(
+          title: Text('Pick a color to Change Theme!'),
+          content: SingleChildScrollView(
+            child: ColorPicker(
+              pickerColor: pickerColor,
+              onColorChanged: (color) {
+                pickerColor = color;
+              },
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              child: Text('Select'),
+              onPressed: () {
+                widget.onColorChanged(pickerColor);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
       },
     );
   }

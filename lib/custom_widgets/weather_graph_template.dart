@@ -51,9 +51,9 @@ class _WeatherGraphTemplateState extends State<WeatherGraphTemplate> {
             header: "Max ${widget.title}",
             format: 'point.x : point.y ${widget.unit}',
             color: Theme.of(context).colorScheme.primaryContainer,
-            textStyle: Theme.of(context).textTheme.labelLarge,
+            textStyle: TextStyle(color: Theme.of(context).colorScheme.primary),
             elevation: 2,
-            shadowColor: Colors.grey,
+            shadowColor: Theme.of(context).colorScheme.shadow,
             canShowMarker: true,
           ),
         ));

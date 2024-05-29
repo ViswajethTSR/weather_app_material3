@@ -2,8 +2,8 @@ import 'package:dio/dio.dart';
 
 BaseOptions options = BaseOptions(
   baseUrl: MyConst.myUrl,
-  connectTimeout: Duration(seconds: 8),
-  receiveTimeout: Duration(seconds: 8),
+  connectTimeout: Duration(seconds: 10),
+  receiveTimeout: Duration(seconds: 10),
 );
 
 class MyConst {

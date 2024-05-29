@@ -11,26 +11,26 @@ class ForecastWeatherCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.all(8),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: Theme.of(context).colorScheme.secondaryContainer,
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Theme.of(context).colorScheme.primaryContainer, Theme.of(context).colorScheme.secondaryContainer],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).colorScheme.shadow,
-              blurRadius: 2,
-            ),
-          ],
-        ),
-        width: 150,
+      elevation: 5,
+      margin: EdgeInsets.all(5),
+      color: Theme.of(context).colorScheme.primaryContainer,
+      // padding: const EdgeInsets.all(16),
+      // decoration: BoxDecoration(
+      //   borderRadius: BorderRadius.circular(20),
+      //   color: Theme.of(context).colorScheme.secondaryContainer,
+      //   gradient: LinearGradient(
+      //     begin: Alignment.topCenter,
+      //     end: Alignment.bottomCenter,
+      //     colors: [Theme.of(context).colorScheme.primaryContainer, Theme.of(context).colorScheme.secondaryContainer],
+      //   ),
+      //   boxShadow: [
+      //     BoxShadow(color: Theme.of(context).colorScheme.tertiary, blurRadius: 2, spreadRadius: 0.1),
+      //   ],
+      // ),
+      // width: 150,
+      child: SizedBox(
+        width: 130,
+        height: 170,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[

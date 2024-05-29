@@ -82,30 +82,31 @@ class _WeatherAppState extends State<WeatherApp> {
             : Expanded(
                 child: SingleChildScrollView(
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
-                      const SizedBox(height: 20),
+                      // const SizedBox(height: 20),
                       _getCurrentWeatherForecast(),
-                      const SizedBox(height: 20),
-                      Divider(
-                        indent: 20,
-                        endIndent: 20,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                      // const SizedBox(height: 20),
+                      // Divider(
+                      //   indent: 20,
+                      //   endIndent: 20,
+                      //   color: Theme.of(context).colorScheme.primary,
+                      // ),
                       const SizedBox(height: 20),
                       _get3DaysForecastWidget(),
                       const SizedBox(height: 20),
-                      Divider(
-                        indent: 20,
-                        endIndent: 20,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                      // Divider(
+                      //   indent: 20,
+                      //   endIndent: 20,
+                      //   color: Theme.of(context).colorScheme.primary,
+                      // ),
                       Center(
                         child: Text(
                           "Weather Stats",
                           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 32, color: Theme.of(context).colorScheme.primary),
                         ),
                       ),
-                      const SizedBox(height: 15),
+                      // const SizedBox(height: 15),
                       Center(
                         child: Text(
                           "Temperature Graph",
@@ -118,7 +119,7 @@ class _WeatherAppState extends State<WeatherApp> {
                         title: "Temperature",
                         unit: "°C",
                       ),
-                      const SizedBox(height: 15),
+                      // const SizedBox(height: 15),
                       Center(
                         child: Text(
                           "WindSpeed Graph",
@@ -197,25 +198,27 @@ class _WeatherAppState extends State<WeatherApp> {
   }
 
   Widget _getCurrentWeatherForecast() {
-    return Container(
-      height: 150,
-      width: 365,
-      margin: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).colorScheme.primaryContainer,
-            Theme.of(context).colorScheme.secondaryContainer,
-          ],
-        ),
-        // color: Theme.of(context).colorScheme.secondaryContainer,
-        boxShadow: [
-          BoxShadow(color: Theme.of(context).colorScheme.shadow, blurRadius: 2),
-        ],
-      ),
+    return Card(
+      elevation: 5,
+      // height: 150,
+      // width: 365,
+      margin: const EdgeInsets.only(left: 15, right: 15, top: 20),
+      color: Theme.of(context).colorScheme.primaryContainer,
+      // decoration: BoxDecoration(
+      //   borderRadius: BorderRadius.circular(20),
+      //   gradient: LinearGradient(
+      //     begin: Alignment.topCenter,
+      //     end: Alignment.bottomCenter,
+      //     colors: [
+      //       Theme.of(context).colorScheme.primaryContainer,
+      //       Theme.of(context).colorScheme.secondaryContainer,
+      //     ],
+      //   ),
+      //   // color: Theme.of(context).colorScheme.secondaryContainer,
+      //   boxShadow: [
+      //     BoxShadow(color: Theme.of(context).colorScheme.surfaceTint, spreadRadius: 0.1, blurRadius: 2),
+      //   ],
+      // ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [_getOverallCurrentTemp(), _getAdditionalWeatherInfo()],
